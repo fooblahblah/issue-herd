@@ -1645,3 +1645,29 @@ def test_antigravity_old_model_key_in_a_later_file_wins(harness):
     proc, calls = harness.run("101", "--agent", "antigravity", issues={"101": OPEN})
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert claude_args(calls) == ["--model", "gemini-4-argon-high"]
+
+
+def test_the_antigravity_coordinator_hands_reading_and_running_to_subagents(harness):
+    proc, calls = harness.run("101", "--agent", "antigravity", issues={"101": OPEN})
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    prompt = prompt_sent(calls)
+    flat = " ".join(prompt.split())
+    assert "KEEPING THIS SESSION LEAN" in prompt
+    assert "Do not read source files, search the code, edit files, or run tests" in flat
+    assert "never full file contents, diffs or logs" in flat
+    assert "only the output of the tests that failed" in flat
+    # The plain workflow no longer sends the coordinator to read the code
+    # or to do small tasks itself.
+    assert "Have a subagent read the affected code and reproduce the problem" in flat
+    assert "1. Understand. Read the affected code" not in flat
+    assert "even when it is small" in flat
+    assert "or do it yourself when it is small" not in flat
+
+
+def test_the_claude_plain_prompt_keeps_its_own_workflow(harness):
+    proc, calls = harness.run("101", "--plain", issues={"101": OPEN})
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    flat = " ".join(prompt_sent(calls).split())
+    assert "KEEPING THIS SESSION LEAN" not in flat
+    assert "1. Understand. Read the affected code and reproduce the problem" in flat
+    assert "or do it yourself when it is small" in flat
