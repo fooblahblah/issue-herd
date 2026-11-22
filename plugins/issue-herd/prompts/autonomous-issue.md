@@ -206,6 +206,24 @@ it, before moving on.
 
 Where this prompt says your scratchpad directory, use a directory of your own
 outside this worktree, such as one made with `mktemp -d`.
+
+KEEPING THIS SESSION LEAN
+
+This session coordinates; subagents do the work. Everything this session
+reads stays in its context and is paid for again on every later turn, while a
+subagent's reading ends with it. So:
+- Do not read source files, search the code, edit files, or run tests or the
+  app in this session. Wherever this prompt says to read, reproduce,
+  implement, test or verify something, have a subagent do it.
+- When you need to know something about the code, ask a subagent a narrow
+  question and have it answer in a few lines.
+- Ask every subagent to report briefly: what it did or found, the files and
+  functions involved with line references, any commit it made, the test
+  result, and open questions; never full file contents, diffs or logs.
+- Whoever runs tests reports whether they passed, and only the output of the
+  tests that failed.
+What this session reads itself is limited to the issues, the subagents'
+reports, `git` and `gh` status, the PR description, and `pr-land`'s output.
 {{/antigravity}}
 
 TASK GRANULARITY
@@ -224,9 +242,16 @@ Split the work into the smallest number of independently meaningful tasks.
 Batch small, closely related, same-shape changes into one task when they share
 the same implementation and review surface and can be tested coherently.
 
+{{#claude}}
 Give each task to one subagent with everything it needs to know, or do it
 yourself when it is small. Subagents that edit files must not work in this
 worktree at the same time.
+{{/claude}}
+{{#antigravity}}
+Give each task to one subagent with everything it needs to know, even when it
+is small. Subagents that edit files must not work in this worktree at the same
+time.
+{{/antigravity}}
 {{/plain}}
 {{#ultracode}}
 Size each workflow to the work. Fan out where the work is genuinely
@@ -249,9 +274,19 @@ complexity, follow the appropriate Superpowers design and planning workflow.
 {{/superpowers}}
 {{#plain}}
 Work in this order, keeping each step proportionate to the issue:
+{{#claude}}
 1. Understand. Read the affected code and reproduce the problem, or confirm
    the gap, before changing anything. Decide whether the change is
    customer-facing.
+{{/claude}}
+{{#antigravity}}
+1. Understand. Have a subagent read the affected code and reproduce the
+   problem, or confirm the gap, before anything changes. It returns a brief:
+   the files and functions involved with line references, the cause or the
+   gap, how to reproduce it, and whether the change is customer-facing.
+   Settle any remaining question with another narrow question to a subagent,
+   not by reading the code here.
+{{/antigravity}}
 2. Design. For bounded, well-specified issues, settle the approach in a few
    lines and move on. If the work is genuinely architectural or reveals
    substantial hidden complexity, write a short plan first (the approach, the

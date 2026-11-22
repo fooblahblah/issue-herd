@@ -74,8 +74,19 @@ takes only `inherit` (the session's own model), `flash_lite`, `flash` and
 1.5.11, `flash_lite` ran Gemini 3.5 Flash Lite, `flash` Gemini 4 Hydrogen at
 high and `pro` Gemini 4 Hydrogen at xhigh. Out of the box light work goes to
 `flash`, standard work to `pro`, and heavy work and the final whole-branch
-review stay on the session's model; the launch summary lists these. The
-final review is a subagent of the session's rather than the
+review stay on the session's model; the launch summary lists these.
+
+An Antigravity session is told to keep its own context small: it
+coordinates, and subagents read and search the code, reproduce the problem,
+implement every task however small, and run the tests and the app, each
+reporting back in a few lines rather than with file contents, diffs or logs.
+A file the session read itself would ride along in its context, and be paid
+for, on every later turn; in a subagent it is dropped when the subagent ends.
+In one measured run with the earlier prompt, the coordinator did the reading
+and editing itself and took about 91% of the session's tokens, 80% of what it
+read being source code.
+
+The final review is a subagent of the session's rather than the
 `final-reviewer` agent, and `pr-land` runs in the foreground rather than
 under a Monitor. In Herdr the sidebar names the issues but not the PR, since
 the hook that adds it runs only in Claude Code.
