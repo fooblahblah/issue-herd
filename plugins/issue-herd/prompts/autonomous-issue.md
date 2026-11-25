@@ -343,7 +343,7 @@ Continue autonomously through:
 {{/antigravity}}
 {{/plain}}
 {{#ultracode}}
-- final whole-branch review using {{FINAL_REVIEW_MODEL}};
+- final whole-branch review using {{FINAL_REVIEW_MODEL}} at {{FINAL_REVIEW_EFFORT}} effort;
 {{/ultracode}}
 - fresh final verification, including the after-the-fix automated
   verification of a customer-facing change.

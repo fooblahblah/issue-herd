@@ -1,6 +1,6 @@
 ---
 name: final-reviewer
-description: "Use this agent for the final whole-branch review before a PR is marked ready or merged: one holistic pass over the full diff against the remote default branch after the task-level reviews are done. It runs at xhigh effort, so do not use it for task-scoped reviews or for re-reviewing a fix."
+description: "Use this agent for the final whole-branch review before a PR is marked ready or merged: one holistic pass over the full diff against the remote default branch after the task-level reviews are done. It is the costliest review in a session (xhigh effort unless dispatched with another), so do not use it for task-scoped reviews or for re-reviewing a fix."
 model: opus
 effort: xhigh
 color: purple
