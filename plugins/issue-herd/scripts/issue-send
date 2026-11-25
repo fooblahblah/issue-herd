@@ -101,10 +101,13 @@ for host in "${hosts[@]}"; do
                 missing+=("Herdr is not running")
                 continue
             fi
+            # A failing list counts as no agent rather than ending the
+            # script without a word.
             agent_status="$(
-                herdr agent list 2>/dev/null |
+                { herdr agent list 2>/dev/null || true; } |
                     jq -r --arg name "$agent_name" \
-                        'first(.result.agents[]? | select(.name == $name) | .agent_status) // empty'
+                        'first(.result.agents[]? | select(.name == $name) | .agent_status) // empty' \
+                        2>/dev/null || true
             )"
             if [[ -z "$agent_status" ]]; then
                 missing+=("Herdr has no agent named ${agent_name}")
