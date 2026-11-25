@@ -394,6 +394,9 @@ def test_final_reviewer_agent_runs_at_xhigh():
     frontmatter = agent.split("---")[1].splitlines()
     assert "name: final-reviewer" in frontmatter
     assert "effort: xhigh" in frontmatter
+    # The prompt may dispatch it at another effort, so its description must
+    # not promise a fixed one.
+    assert "It runs at xhigh effort" not in agent
 
 
 def test_branch_slug_never_ends_in_a_dash(harness):
@@ -893,7 +896,17 @@ def test_ultracode_final_review_uses_the_configured_model(harness):
     harness.write_config(harness.user_config, {"final_review": {"model": "fable"}})
     proc, calls = harness.run("101", "--ultracode", issues={"101": OPEN})
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert "final whole-branch review using Fable 5.2" in prompt_sent(calls)
+    # Only the model is set, so the default effort comes with it.
+    assert "final whole-branch review using Fable 5.2 at xhigh effort;" in prompt_sent(calls)
+
+
+def test_ultracode_final_review_uses_the_configured_effort(harness):
+    harness.write_config(
+        harness.user_config, {"final_review": {"model": "fable", "effort": "high"}}
+    )
+    proc, calls = harness.run("101", "--ultracode", issues={"101": OPEN})
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "final whole-branch review using Fable 5.2 at high effort;" in prompt_sent(calls)
 
 
 @pytest.mark.parametrize(
