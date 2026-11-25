@@ -76,7 +76,13 @@ elif tool == "gh":
         sys.exit(f"stub gh: unexpected {args}")
 elif tool == "herdr":
     if args[:2] == ["status", "server"]:
-        sys.exit(0 if os.environ.get("STUB_HERDR_UP") == "1" else 1)
+        # Herdr 0.9 exits 0 whether or not its server runs; only the output
+        # tells.
+        running = os.environ.get("STUB_HERDR_UP") == "1"
+        if "--json" in args:
+            print(json.dumps({"status": "running" if running else "not_running", "running": running}))
+        else:
+            print(f"status: {'running' if running else 'not running'}")
     elif args[:2] == ["worktree", "list"]:
         worktrees = json.loads(os.environ.get("STUB_WORKTREES", "[]"))
         print(json.dumps({"result": {"worktrees": worktrees}}))
@@ -89,6 +95,9 @@ elif tool == "herdr":
     elif args[:2] == ["agent", "start"] and not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", args[2]):
         sys.exit(f"invalid_agent_name: {args[2]}")
     elif args[:2] == ["agent", "list"]:
+        if os.environ.get("STUB_HERDR_UP") != "1":
+            print(json.dumps({"error": {"code": "server_not_running"}}))
+            sys.exit(1)
         agents = json.loads(os.environ.get("STUB_AGENTS") or "[]")
         print(json.dumps({"result": {"agents": agents}}))
     elif args[:2] == ["agent", "prompt"] and os.environ.get("STUB_HERDR_BLOCKED") == "1":
@@ -1145,7 +1154,7 @@ def test_an_orca_terminal_launches_in_orca_even_when_herdr_runs(harness):
 def test_outside_both_hosts_the_running_one_is_used(harness):
     proc, calls = harness.run("101", issues={"101": OPEN}, herdr_up=False, orca_up=True)
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert herdr_calls(calls) == [["herdr", "status", "server"]]
+    assert herdr_calls(calls) == [["herdr", "status", "server", "--json"]]
     assert orca_create(calls)
     harness.log.unlink()
     proc, calls = harness.run("102", issues={"102": OPEN}, herdr_up=True, orca_up=False)

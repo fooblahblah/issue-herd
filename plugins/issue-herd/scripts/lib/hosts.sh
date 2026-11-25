@@ -20,7 +20,12 @@ orca_shim_dir="${XDG_CONFIG_HOME:-$HOME/.config}/orca/linux-orca-cli-shim"
 if ! command -v orca >/dev/null && [[ -x "${orca_shim_dir}/orca" ]]; then
     PATH="${orca_shim_dir}:${PATH}"
 fi
-herdr_up() { command -v herdr >/dev/null && herdr status server >/dev/null 2>&1; }
+# Herdr's status command exits 0 whether or not its server runs, so the
+# answer is read from its JSON.
+herdr_up() {
+    command -v herdr >/dev/null &&
+        herdr status server --json 2>/dev/null | jq -e '.running == true' >/dev/null 2>&1
+}
 orca_up() {
     command -v orca >/dev/null &&
         orca status --json 2>/dev/null | jq -e '.ok and .result.runtime.reachable' >/dev/null 2>&1
